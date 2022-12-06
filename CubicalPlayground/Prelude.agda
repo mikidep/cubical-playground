@@ -15,3 +15,7 @@ module PathReasoning where
   syntax ≡⟨⟩∎-syntax x y p = x ≡⟨ p ⟩∎ y ∎
 
 open PathReasoning using (≡⟨⟩∎-syntax) public
+
+infixr 1 _$_
+_$_ : {ℓ ℓ' : _} {A : Type ℓ} {B : Type ℓ'} → (A → B) → A → B
+f $ x = f x
