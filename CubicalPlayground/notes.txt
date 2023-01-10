@@ -1,0 +1,24 @@
+(x : iterate ListF n ⊥) →
+colim-leg (suc (suc n)) (cons a₁ (cons a₂ x)) ≡
+colim-leg (suc (suc n)) (cons a₂ (cons a₁ x))
+
+∀ x → (cons a₁ ∘ cons a₂) » colim-leg (suc (suc n)) ≡ (cons a₂ cons a₁) » colim-leg (suc (suc n))
+
+(x : iterate ListF n ⊥) →
+colim-leg (suc (suc (suc n)))
+(cons a₁ (cons a₂ (CubicalPlayground.Bag.bagChain-ι n x)))
+≡
+colim-leg (suc (suc (suc n)))
+(cons a₂ (cons a₁ (CubicalPlayground.Bag.bagChain-ι n x)))
+
+∀ x → bagChain .ι n » (cons a₁ ∘ cons a₂) » colim-leg (suc (suc (suc n)))
+≡
+       bagChain .ι n » (cons a₂ ∘ cons a₁) » colim-leg (suc (suc (suc n)))
+
+bagChain .ι » colim-leg (suc n)
+≡ colim-leg n
+
+
+
+F (bagChain .ι » colim-leg (suc n)) = colim-com (loopIdx (suc (suc (suc n))) (swapIdx (suc n))) ≡$ (cons a₂ (cons a₁ (bagChain .ι n l)))
+F (colim-leg n)                     = colim-com (loopIdx (suc (suc      n )) (swapIdx      n )) ≡$ (cons a₂ (cons a₁                l ))

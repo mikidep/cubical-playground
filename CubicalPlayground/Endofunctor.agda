@@ -138,7 +138,7 @@ iterate-endo-inner : Endofunctor → ℕ → Endofunctor
 iterate-endo-inner F zero = idF
 iterate-endo-inner F (suc n) = (iterate-endo-inner F n) ∘F F
 
-iterate-endo = iterate-endo-inner
+iterate-endo = iterate-endo-outer
 
 it-endo-outer≡inner : (F : Endofunctor) (n : ℕ) → iterate-endo-outer F n ≡ iterate-endo-inner F n
 it-endo-outer≡inner F zero = refl
