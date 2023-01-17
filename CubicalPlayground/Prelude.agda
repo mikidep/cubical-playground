@@ -85,6 +85,8 @@ module PathOverReasoning
     (po-q : yb ≡[ q , B ] zb)
     → xb ≡[ p ∙ q , B ] zb
   ≡[-]⟨-⟩-syntax _ B _ po-p po-q = compPathP' {B = B} po-p po-q
+  syntax ≡[-]⟨-⟩-syntax xb B po-p po-q = xb ≡[ p , B ]⟨ po-p ⟩ po-q
+  infixr 2 ≡[-]⟨-⟩-syntax
 
   ≡[-]⟨-⟩∎-syntax :
     ∀ {ℓb}
@@ -96,10 +98,24 @@ module PathOverReasoning
     (po-p : xb ≡[ p , B ] yb)
     → xb ≡[ p , B ] yb
   ≡[-]⟨-⟩∎-syntax _ _ _ _ po-p = po-p
-
-  syntax ≡[-]⟨-⟩-syntax xb B po-p po-q = xb ≡[ p , B ]⟨ po-p ⟩ po-q
-  infixr 2 ≡[-]⟨-⟩-syntax
   syntax ≡[-]⟨-⟩∎-syntax p B xb yb po-p = xb ≡[ p , B ]⟨ po-p ⟩∎ yb ∎
   infix 3 ≡[-]⟨-⟩∎-syntax
 
 open PathOverReasoning public
+
+module PathPReasoning where
+  -⟨-⟩∎-syntax : ∀ {ℓ} (A : I → Type ℓ) (a₀ : A i0) (a₁ : A i1) (p : PathP A a₀ a₁) → PathP A a₀ a₁
+  -⟨-⟩∎-syntax _ _ _ p = p
+  syntax -⟨-⟩∎-syntax A a₀ a₁ p = a₀ -⟨ A , p ⟩∎- a₁
+  infix 3 -⟨-⟩∎-syntax
+
+--  -⟨∶-∶⟩-syntax :
+--    ∀ {ℓ}
+--    (A : I → Type ℓ)
+--    (B : Type ℓ)
+--    (pτ : B ≡ A i0)
+--    (a₀ : A i0)
+--    (a₁ : A i1)
+--    (p : PathP A a₀ a₁)
+--    → PathP A a₀ a₁
+  
