@@ -2,6 +2,7 @@ module CubicalPlayground.Prelude where
 
 open import Cubical.Foundations.Prelude public
 open import Cubical.Foundations.Function using (_∘_; flip; ∘-assoc)
+open import Cubical.Functions.FunExtEquiv using (funExtDep)
 
 module PathReasoning where
   private
@@ -66,6 +67,25 @@ module _
 
 syntax ≡[-]-syntax p B xb yb = xb ≡[ p , B ] yb
 infix 4 ≡[-]-syntax
+
+funExt-≡[-] :
+  ∀ {ℓa ℓb}
+  {A : Type ℓa}
+  {B : A → Type ℓb}
+  {f g : ∀ a → B a}
+  → (∀ {x y : A} (p : x ≡ y) → (f x ≡[ p , B ] g y))
+  → f ≡ g
+funExt-≡[-] hom = funExtDep hom
+
+cong-≡[-] :
+  ∀ {ℓa ℓb}
+  {A : Type ℓa}
+  {B : A → Type ℓb}
+  (f : ∀ a → B a)
+  {x y : A}
+  (p : x ≡ y)
+  → f x ≡[ p , B ] f y
+cong-≡[-] f p = cong f p
 
 module PathOverReasoning
   {ℓa}

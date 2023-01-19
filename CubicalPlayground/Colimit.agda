@@ -28,3 +28,26 @@ elim :
   → (x : colim F) → P x
 elim DC (colim-leg j A) = DC .leg j A
 elim DC (colim-com f i A) = DC .com f i A
+
+module _ where
+  open Graph
+
+  com₁-∘ : 
+    ∀ {ℓd ℓv ℓe}
+    {I : Graph ℓv ℓe}
+    {F : Diag ℓd I}
+    {i j k : I .Node}
+    (e : I .Edge i j)
+    (f : I .Edge j k)
+    → F <$> e » F <$> f » colim-leg {F = F} k ≡ colim-leg i
+  com₁-∘ {F = F} {i = i} {j = j} {k = k} e f = cong ((F <$> e) »_) (colim-com f) ∙  colim-com e 
+  
+--   com₂-∘ : 
+--     ∀ {ℓd ℓv ℓe}
+--     {I : Graph ℓv ℓe}
+--     {F : Diag ℓd I}
+--     {i j k : I .Node}
+--     (e : I .Edge i j)
+--     (f : I .Edge j k)
+--     → F <$> e » F <$> f » colim-leg {F = F} k ≡ colim-leg i
+--   com₂-∘ {F = F} {i = i} {j = j} {k = k} e f = {!   !}
