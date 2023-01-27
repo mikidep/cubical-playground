@@ -199,23 +199,38 @@ module _ (A : Type) where
         refl
   lemma = refl
 
-  -- lemma' : ∀ {ℓ ℓ'} {A B B' C : Type ℓ} {V : Type ℓ'}
-  --   {f  : A  → B }
-  --   {g  : B  → C }
-  --   {f' : A  → B'}
-  --   {g' : B' → C }
-  --   {lA  : A  → V }
-  --   {lB  : B  → V }
-  --   {lB' : B' → V }
-  --   {lC  : C  → V }
-  --   {com-f  : f  » lB  ≡ lA }
-  --   {com-g  : g  » lC  ≡ lB }
-  --   {com-f' : f' » lB' ≡ lA }
-  --   {com-g' : g' » lC  ≡ lB'}
-  --   {2-cell : f » g ≡ f' » g'}
-  --   → (comp-com {lC = lC} com-f com-g ≡[ 2-cell , (λ f → f » lC ≡ lA) ] comp-com {lC = lC} com-f' com-g')
-  --     ≡ (_ ∙ _ ≡ _ ∙ _)
-  -- lemma' = refl
+  sq-weird-funExt : ∀ {ℓ ℓ'}
+    {A : Type ℓ} {B : Type ℓ'}
+    {tl tr bl br : A → B}
+    {te : tl ≡ tr}
+    {be : bl ≡ br}
+    {le : tl ≡ bl}
+    {re : tr ≡ br}
+    → PathP (λ i → (x : A) → le i x ≡ re i x) (te ≡$_) (be ≡$_)
+    → (Square te be le re)
+  sq-weird-funExt what i j x = what i x j
+
+  sq-weird-funExt⁻ : ∀ {ℓ ℓ'}
+    {A : Type ℓ} {B : Type ℓ'}
+    {tl tr bl br : A → B}
+    {te : tl ≡ tr}
+    {be : bl ≡ br}
+    {le : tl ≡ bl}
+    {re : tr ≡ br}
+    → Square te be le re
+    → PathP (λ i → (x : A) → le i x ≡ re i x) (te ≡$_) (be ≡$_)
+  sq-weird-funExt⁻ sq i x j = sq i j x
+
+  sq-funExt : ∀ {ℓ ℓ'}
+    {A : Type ℓ} {B : Type ℓ'}
+    {tl tr bl br : A → B}
+    {teh : ∀ x → tl x ≡ tr x}
+    {beh : ∀ x → bl x ≡ br x}
+    {leh : ∀ x → tl x ≡ bl x}
+    {reh : ∀ x → tr x ≡ br x}
+    → (∀ x → Square (teh x) (beh x) (leh x) (reh x))
+    → Square (funExt teh) (funExt beh) (funExt leh) (funExt reh)
+  sq-funExt sqh i j x = sqh x i j
 
   open AdjLoop
   bag-eq : ∀ a₁ a₂ b → bag-cons a₁ (bag-cons a₂ b) ≡ bag-cons a₂ (bag-cons a₁ b)
@@ -229,7 +244,8 @@ module _ (A : Type) where
         _
         (λ b → bag-cons a₁ (bag-cons a₂ b) ≡ bag-cons a₂ (bag-cons a₁ b))
     dep-cocone .leg n l = colim-com (loopIdx (suc (suc n)) (swapIdx n)) ≡$ (cons a₂ (cons a₁ l))
-    dep-cocone .com {j = n} (next n) = λ i x j → sq i j x
+    
+    dep-cocone .com {j = n} (next n) = sq-weird-funExt⁻ sq
       where    
       ι' = bagChain .ι
       l = colim-leg {F = asDiag bagChain}
@@ -246,18 +262,6 @@ module _ (A : Type) where
       le = cong (cons a₁ » cons a₂ » swap n »_) $ colim-com (next (2 + n))
       re : tr ≡ br
       re = cong (cons a₁ » cons a₂ »_) $ colim-com (next (2 + n))
-      -- com-te = cong (ι' (2 + n) »_) $ colim-com (loopIdx _ (swapIdx (1 + n)))
-      -- com-be = colim-com (loopIdx (2 + n) (swapIdx n))
-      -- com-le = cong (swap n »_) $ colim-com (next (2 + n))
-      -- com-re = colim-com (next (2 + n))
-      -- cong-com-te≡te : cong (cons a₁ » cons a₂ »_) com-te ≡ te
-      -- cong-com-te≡te = refl
-      -- cong-com-be≡be : cong (cons a₁ » cons a₂ »_) com-be ≡ be
-      -- cong-com-be≡be = refl
-      -- cong-com-le≡le : cong (cons a₁ » cons a₂ »_) com-le ≡ le
-      -- cong-com-le≡le = refl
-      -- cong-com-re≡re : cong (cons a₁ » cons a₂ »_) com-re ≡ re
-      -- cong-com-re≡re = refl
       2-cell : ∀ n → swap n » ι' (2 + n) ≡ ι' (2 + n) » swap (1 + n)
       2-cell n = funExt (hom n)
         where
@@ -273,7 +277,8 @@ module _ (A : Type) where
       com-com-sq = {!   !}
       sq : Square te be le re
       sq = compPath→Square $ cong■ (cons a₁ » cons a₂ »_) com-com-sq
-    dep-cocone .com {j = .(2 + n)} (loopIdx .(2 + n) (swapIdx n)) = λ i x j → sq i j x
+    
+    dep-cocone .com {j = .(2 + n)} (loopIdx .(2 + n) (swapIdx n)) = sq-weird-funExt⁻ sq
       where
       l = colim-leg
       loop' : ∀ {n} → _
@@ -293,8 +298,8 @@ module _ (A : Type) where
       le = cong (cons a₁ » cons a₂ » swap (2 + n) »_) $ colim-com (loopIdx _ (F$ F$ swapIdx n))
       re : tr ≡ br
       re = cong (cons a₁ » cons a₂ »_) $ colim-com (loopIdx _ (F$ F$ swapIdx n))
-      p : ∀ n → swap (2 + n) » loop' (F$ F$ swapIdx n) ≡ loop' (F$ F$ swapIdx n) » swap (2 + n)
-      p n = funExt hom
+      2-cell : ∀ n → swap (2 + n) » loop' (F$ F$ swapIdx n) ≡ loop' (F$ F$ swapIdx n) » swap (2 + n)
+      2-cell n = funExt hom
         where
         hom : ∀ l →
             (swap (2 + n) » loop' (F$ F$ swapIdx n)) l
@@ -308,12 +313,12 @@ module _ (A : Type) where
       com-com-sq : Square
         (com-∘ (loopIdx _ (swapIdx (2 + n))) (loopIdx _ (F$ (F$ swapIdx n))))
         (com-∘ (loopIdx _ (F$ (F$ swapIdx n))) (loopIdx _ (swapIdx (2 + n))))
-        (cong (_» l (4 + n)) $ p n)
+        (cong (_» l (4 + n)) $ 2-cell n)
         refl
       com-com-sq = {!   !}
       cong-com-com-te = (cong (cons a₁ » cons a₂ »_) $ com-∘ (loopIdx _ (swapIdx (2 + n))) (loopIdx _ (F$ (F$ swapIdx n))))
       cong-com-com-be = (cong (cons a₁ » cons a₂ »_) $ com-∘ (loopIdx _ (F$ (F$ swapIdx n))) (loopIdx _ (swapIdx (2 + n))))
-      cong-com-com-le = (cong (cons a₁ » cons a₂ »_) $ cong (_» l (4 + n)) $ p n)
+      cong-com-com-le = (cong (cons a₁ » cons a₂ »_) $ cong (_» l (4 + n)) $ 2-cell n)
       cong-com-com-sq : Square
         cong-com-com-te
         cong-com-com-be
@@ -336,30 +341,75 @@ module _ (A : Type) where
           e
           refl) cong-com-com-le≡refl)
         cong-com-com-sq
-
       sq : Square te be le re
       sq = compPath→Square le-refl-sq
-    dep-cocone .com {j = .(suc n)} (loopIdx .(suc n) (F<$>idx n idx)) = {!   !} -- λ i x j → sq i j x
-
---       where
---       l = colim-leg
---       loop' = bagChain .loop
---       te = cong (loop' n idx » cons a₁ » cons a₂ »_) $ colim-com (loopIdx (2 + n) (swapIdx n))
---       be = cong (cons a₁ » cons a₂ »_) $ colim-com (loopIdx (2 + n) (swapIdx n))
---       le = cong (cons a₁ » cons a₂ » swap n »_) $ colim-com (loopIdx (2 + n) (F<$>idx (1 + n) (F<$>idx n idx)))
---       re = cong (cons a₁ » cons a₂ »_) $ colim-com (loopIdx (2 + n) (F<$>idx (1 + n) (F<$>idx n idx)))
---       sq' : le ∙ be ≡ te ∙ re
---       sq' i j = cons a₁ » cons a₂ » {!   !} i j
---         where
---         p : ∀ n (idx : LoopIdx (2 + n)) → swap n » loop' (2 + n) idx ≡ loop' (2 + n) idx » swap n
---         p = ?
---         com-∘-com :
---             com-∘ (loopIdx (2 + n) (swapIdx n)) (loopIdx (2 + n) idx)
---           ≡[ p n idx , (λ f → f » l (2 + n) ≡ l (2 + n)) ]
---             com-∘ (loopIdx (2 + n) idx) (loopIdx (2 + n) (swapIdx n))
---         com-∘-com = {!   !}
---       sq : Square te be le re
---       sq = compPath→Square sq'
+    
+    dep-cocone .com {j = .(suc n)} (loopIdx .(suc n) (F<$>idx n idx)) = sq-weird-funExt⁻ sq
+      where
+      l = colim-leg
+      loop' : ∀ {n} → _
+      loop' {n} = bagChain .loop n
+      F$_ : ∀ {n} → _ → _
+      F$_ {n} = F<$>idx n
+      tl = cons a₁ » cons a₂ » loop' (F$ F$ F$ idx) » swap (1 + n) » l (3 + n)
+      tr = cons a₁ » cons a₂ » loop' (F$ F$ F$ idx) » l (3 + n)
+      bl = cons a₁ » cons a₂ » swap (1 + n) » l (3 + n)
+      br = cons a₁ » cons a₂ » l (3 + n)
+      te : tl ≡ tr
+      te = cong (cons a₁ » cons a₂ »_)
+          $ cong (loop' (F$ F$ F$ idx) »_) $ colim-com (loopIdx _ (swapIdx (1 + n)))
+      be : bl ≡ br
+      be = cong (cons a₁ » cons a₂ »_)
+          $ colim-com (loopIdx _ (swapIdx (1 + n)))
+      le : tl ≡ bl
+      le = cong (cons a₁ » cons a₂ »_)
+          $ cong (swap (1 + n) »_) $ colim-com (loopIdx _ (F$ F$ F$ idx))
+      re : tr ≡ br
+      re = cong (cons a₁ » cons a₂ »_)
+          $ colim-com (loopIdx _ (F$ F$ F$ idx))
+      2-cell : ∀ n idx
+        → swap (1 + n) » loop' (F$ F$ F$ idx)
+          ≡ loop' {n = 3 + n} (F$ F$ F$ idx) » swap (1 + n)
+      2-cell _ _ = funExt hom
+        where
+        hom : _
+        hom nil = refl
+        hom (cons a nil) = refl
+        hom (cons a (cons a₁ nil)) = refl
+        hom (cons a (cons a₁ (cons a₂ _))) = refl
+      com-com-le = cong (_» l (3 + n)) $ 2-cell n idx
+      com-com-sq : Square
+        (com-∘ (loopIdx _ $ swapIdx (1 + n)) (loopIdx _ $ F$ F$ F$ idx))
+        (com-∘ (loopIdx _ $ F$ F$ F$ idx) (loopIdx _ $ swapIdx (1 + n)))
+        com-com-le
+        refl
+      com-com-sq = {!   !}
+      cong-com-com-te = cong (cons a₁ » cons a₂ »_) $ com-∘ (loopIdx _ $ swapIdx (1 + n)) (loopIdx _ $ F$ F$ F$ idx)
+      cong-com-com-be = cong (cons a₁ » cons a₂ »_) $ com-∘ (loopIdx _ $ F$ F$ F$ idx) (loopIdx _ $ swapIdx (1 + n))
+      cong-com-com-le = cong (cons a₁ » cons a₂ »_) $ cong (_» l (3 + n)) $ 2-cell n idx
+      cong-com-com-sq : Square
+        cong-com-com-te
+        cong-com-com-be
+        cong-com-com-le
+        refl
+      cong-com-com-sq = cong■ {le = com-com-le} (cons a₁ » cons a₂ »_) com-com-sq
+      cong-com-com-le≡refl : cong-com-com-le ≡ refl
+      cong-com-com-le≡refl i j nil = colim-leg (3 + n) (cons a₁ (cons a₂ nil))
+      cong-com-com-le≡refl i j (cons a₃ l) = colim-leg (3 + n) (cons a₁ (cons a₂ (cons a₃ (loop' idx l))))
+      le-refl-sq : Square
+        cong-com-com-te
+        cong-com-com-be
+        refl
+        refl
+      le-refl-sq = transport
+        (cong (λ e → Square
+          cong-com-com-te
+          cong-com-com-be
+          e
+          refl) cong-com-com-le≡refl)
+        cong-com-com-sq
+      sq : Square te be le re
+      sq = compPath→Square le-refl-sq
 
   SetTrunc-ElimProp : ∀ {ℓ ℓ'} {A : Type ℓ} {P : ∥ A ∥₂ → Type ℓ'}
     → (∀ xt → isProp (P xt))
@@ -510,4 +560,4 @@ module _ (A : Type) where
             depCocone : DepCocone _ _ _ _
             depCocone .leg n l = refl
             depCocone .com idx = funExtDep (λ p → isProp→PathP (λ _ → FMSet.trunc _ _) refl refl)
-         
+           
